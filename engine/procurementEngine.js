@@ -46,10 +46,21 @@ export function runProcurementSimulation({ items = [], inventory = [], demand = 
 
   inventory.forEach((row) => {
     const key = `${row.itemId}::${row.locationId}`;
-    const existing = inventoryByItemLocation.get(key) || { onHand: 0, reserved: 0, value: 0 };
+    const existing = inventoryByItemLocation.get(key) || {
+      onHand: 0,
+      reserved: 0,
+      value: 0,
+      safetyStock: num(row.safetyStock, 0),
+    };
+
     existing.onHand += num(row.quantityOnHand);
     existing.reserved += num(row.quantityReserved);
     existing.value += num(row.inventoryValue);
+
+    if (row.safetyStock !== undefined && row.safetyStock !== null) {
+      existing.safetyStock = num(row.safetyStock, 0);
+    }
+
     inventoryByItemLocation.set(key, existing);
   });
 
@@ -79,7 +90,7 @@ export function runProcurementSimulation({ items = [], inventory = [], demand = 
       if (demandQty <= 0 && netNeed <= 0) return;
 
       const leadTimeRequirement = item.requiredLeadTimeDays || 14;
-      const safetyStock = num(item.safetyStock, 0);
+      const safetyStock = num(inv.safetyStock, num(item.safetyStock, 0));
       const targetStock = demandQty + safetyStock;
       const shortage = Math.max(0, targetStock - available);
       const requiredPurchase = shortage;
