@@ -52,7 +52,37 @@ function SimulationPanel({ scenarioKey, setScenarioKey, onRun, running, hasData 
       <div><div style={{fontFamily:"'Oswald',sans-serif",fontSize:14,letterSpacing:'.05em',textTransform:'uppercase'}}>Procurement Simulation</div><div style={{fontSize:12,color:COLORS.textMuted,marginTop:5}}>Choose the decision priority, then run the engine against your uploaded data.</div></div>
       <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
         <select value={scenarioKey} onChange={e=>setScenarioKey(e.target.value)} style={{background:COLORS.ink,border:`1px solid ${COLORS.line}`,color:COLORS.textPrimary,borderRadius:6,padding:'10px 12px',fontSize:12}}>{Object.entries(SCENARIOS).map(([key,v])=><option key={key} value={key}>{v.label}</option>)}</select>
-        <button disabled={!hasData||running} onClick={onRun} style={{display:'flex',alignItems:'center',gap:8;background:COLORS.indigo,color:'#fff',border:0,borderRadius:6,padding:'10px 16px',fontFamily:"'Oswald',sans-serif",letterSpacing:'.06em',textTransform:'uppercase',cursor:(!hasData||running)?'not-allowed':'pointer',opacity:(!hasData||running)?.55:1}}>{running?<><Loader2 size={15} className="pp-spin"/> Running…</>:<><Play size={15} fill="currentColor"/> Run Simulation</>}</button>
+        <button
+  disabled={!hasData || running}
+  onClick={onRun}
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    background: COLORS.indigo,
+    color: '#fff',
+    border: 0,
+    borderRadius: 6,
+    padding: '10px 16px',
+    fontFamily: "'Oswald',sans-serif",
+    letterSpacing: '.06em',
+    textTransform: 'uppercase',
+    cursor: (!hasData || running) ? 'not-allowed' : 'pointer',
+    opacity: (!hasData || running) ? 0.55 : 1
+  }}
+>
+  {running ? (
+    <>
+      <Loader2 size={15} className="pp-spin" />
+      Running...
+    </>
+  ) : (
+    <>
+      <Play size={15} fill="currentColor" />
+      Run Simulation
+    </>
+  )}
+</button>
       </div>
     </div>
   </div>;
