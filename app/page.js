@@ -37,12 +37,12 @@ function UploadPanel({ onFile, fileName, loading, error, warnings }) {
         <div style={{fontSize:12,color:COLORS.textMuted,marginTop:5}}>Upload your sample workbook. ProcurePulse will detect inventory, demand, supplier and item sheets automatically.</div>
       </div>
       <label onDragOver={(e)=>{e.preventDefault();setDragging(true)}} onDragLeave={()=>setDragging(false)} onDrop={(e)=>{e.preventDefault();setDragging(false);const f=e.dataTransfer.files?.[0];if(f)onFile(f)}} style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',background:dragging?COLORS.panelRaised:COLORS.ink,border:`1px dashed ${dragging?COLORS.indigo:COLORS.line}`,borderRadius:7,padding:'11px 14px',minWidth:250}}>
-        <Upload size={17} color={COLORS.indigo}/><span style={{fontSize:12}}>{loading?'Reading workbook…':fileName||'Choose Excel file'}</span><input type="file" accept=".xlsx,.xls,.csv" style={{display:'none'}} onChange={(e)=>e.target.files?.[0]&&onFile(e.target.files[0])}/>
+        <Upload size={17} color={COLORS.indigo}/><span style={{fontSize:12}}>{loading?'Reading workbook...':fileName||'Choose Excel file'}</span><input type="file" accept=".xlsx,.xls,.csv" style={{display:'none'}} onChange={(e)=>e.target.files?.[0]&&onFile(e.target.files[0])}/>
       </label>
     </div>
-    {loading&&<div style={{marginTop:12,color:COLORS.textMuted,fontSize:12,display:'flex',alignItems:'center',gap:8}}><Loader2 size={14} className="pp-spin"/> Parsing workbook in browser…</div>}
+    {loading&&<div style={{marginTop:12,color:COLORS.textMuted,fontSize:12,display:'flex',alignItems:'center',gap:8}}><Loader2 size={14} className="pp-spin"/> Parsing workbook in browser...</div>}
     {error&&<div style={{marginTop:12,color:COLORS.danger,fontSize:12,display:'flex',alignItems:'center',gap:8}}><XCircle size={14}/>{error}</div>}
-    {warnings?.length>0&&<div style={{marginTop:12,fontSize:11.5,color:COLORS.amber}}>{warnings.join(' • ')}</div>}
+    {warnings?.length>0&&<div style={{marginTop:12,fontSize:11.5,color:COLORS.amber}}>{warnings.join(' | ')}</div>}
   </div>;
 }
 
@@ -99,6 +99,7 @@ export default function ProcurePulseDashboard(){
   const [results,setResults]=useState([]);
   const [selected,setSelected]=useState(null);
   const [simulated,setSimulated]=useState(false);
+  const [page,setPage]=useState('Dashboard');
   useEffect(()=>{const t=setInterval(()=>setClock(new Date()),1000);return()=>clearInterval(t)},[]);
 
   const tickerItems=useMemo(()=>[
@@ -123,11 +124,19 @@ export default function ProcurePulseDashboard(){
     <div style={{display:'flex'}}>
       <div style={{width:208,flexShrink:0,borderRight:`1px solid ${COLORS.line}`,padding:'22px 14px',display:'flex',flexDirection:'column',gap:26}}>
         <div style={{display:'flex',alignItems:'center',gap:10,padding:'0 6px'}}><div style={{width:34,height:34,borderRadius:6,border:`2px solid ${COLORS.indigo}`,display:'flex',alignItems:'center',justifyContent:'center',transform:'rotate(-3deg)'}}><span style={{fontFamily:"'Oswald',sans-serif",fontWeight:700,fontSize:13,color:COLORS.indigo}}>PP</span></div><div><div style={{fontFamily:"'Oswald',sans-serif",fontWeight:600,fontSize:15}}>ProcurePulse</div><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9.5,color:COLORS.amber,letterSpacing:'.1em'}}>LIVE DEMO</div></div></div>
-        <div><div style={{fontFamily:"'Oswald',sans-serif",fontSize:11,letterSpacing:'.1em',color:COLORS.textMuted,textTransform:'uppercase',padding:'0 8px 8px'}}>Domains</div><div style={{display:'flex',flexDirection:'column',gap:2}}>{domains.map(d=>{const Icon=d.icon;return <div key={d.name} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 10px',borderRadius:6,background:d.active?COLORS.panelRaised:'transparent',color:d.active?COLORS.textPrimary:COLORS.textMuted,fontSize:13.5}}><Icon size={15} color={d.active?COLORS.indigo:COLORS.textMuted}/><span>{d.name}</span>{d.active&&<ChevronRight size={13} style={{marginLeft:'auto'}}/>}</div>})}</div></div>
+        <div>
+          <div style={{fontFamily:"'Oswald',sans-serif",fontSize:11,letterSpacing:'.1em',color:COLORS.textMuted,textTransform:'uppercase',padding:'0 8px 8px'}}>Workspace</div>
+          <div style={{display:'flex',flexDirection:'column',gap:2}}>
+            {['Dashboard','Workings','Logic','About'].map(item=><button key={item} onClick={()=>setPage(item)} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 10px',borderRadius:6,border:0,textAlign:'left',cursor:'pointer',background:page===item?COLORS.panelRaised:'transparent',color:page===item?COLORS.textPrimary:COLORS.textMuted,fontSize:13.5}}>
+              <span style={{width:15,color:page===item?COLORS.indigo:COLORS.textMuted}}>{item==='Dashboard'?'D':item==='Logic'?'L':'i'}</span><span>{item}</span>{page===item&&<ChevronRight size={13} style={{marginLeft:'auto'}}/>}
+            </button>)}
+          </div>
+        </div>
         <div style={{marginTop:'auto',padding:'10px 8px',borderTop:`1px solid ${COLORS.line}`}}><div style={{fontSize:11.5,color:COLORS.textMuted,fontFamily:"'IBM Plex Mono',monospace"}}>{clock ? clock.toLocaleTimeString('en-ZA',{hour12:false})  : '--:--:--'}</div><div style={{fontSize:10,color:COLORS.textMuted,marginTop:5}}>{simulated?'Simulation complete':'Awaiting workbook'}</div></div>
       </div>
       <div style={{flex:1,minWidth:0,padding:'22px 28px 40px'}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:24,gap:16}}><div><h1 style={{fontFamily:"'Oswald',sans-serif",fontSize:22,fontWeight:600,margin:0}}>Procurement Overview</h1><p style={{fontSize:12.5,color:COLORS.textMuted,margin:'4px 0 0'}}>{fileName?`Dataset: ${fileName}`:'Upload a sample Excel dataset to begin'}{simulated?` · Scenario: ${SCENARIOS[scenarioKey].label}`:''}</p></div><div style={{display:'flex',alignItems:'center',gap:14}}><div style={{display:'flex',alignItems:'center',gap:8,background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:6,padding:'7px 12px',color:COLORS.textMuted,fontSize:13}}><Search size={14}/><span>Search results…</span></div><Bell size={17} color={COLORS.textMuted}/><div style={{width:30,height:30,borderRadius:'50%',background:COLORS.indigo,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:600}}>PP</div></div></div>
+        {page==='Dashboard' ? <>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:24,gap:16}}><div><h1 style={{fontFamily:"'Oswald',sans-serif",fontSize:22,fontWeight:600,margin:0}}>Procurement Overview</h1><p style={{fontSize:12.5,color:COLORS.textMuted,margin:'4px 0 0'}}>{fileName?`Dataset: ${fileName}`:'Upload a sample Excel dataset to begin'}{simulated?` | Scenario: ${SCENARIOS[scenarioKey].label}`:''}</p></div><div style={{display:'flex',alignItems:'center',gap:14}}><div style={{display:'flex',alignItems:'center',gap:8,background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:6,padding:'7px 12px',color:COLORS.textMuted,fontSize:13}}><Search size={14}/><span>Search results...</span></div><Bell size={17} color={COLORS.textMuted}/><div style={{width:30,height:30,borderRadius:'50%',background:COLORS.indigo,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:600}}>PP</div></div></div>
         <UploadPanel onFile={handleFile} fileName={fileName} loading={loading} error={error} warnings={parsed?.warnings}/>
         <SimulationPanel scenarioKey={scenarioKey} setScenarioKey={setScenarioKey} onRun={handleRun} running={running} hasData={!!parsed}/>
         <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:14,marginBottom:22}}>{kpis.map((k,i)=><KpiCard key={i} k={k}/>)}</div>
@@ -137,10 +146,124 @@ export default function ProcurePulseDashboard(){
         </div>
         <div style={{background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:8,overflow:'hidden'}}>
           <div style={{padding:'16px 18px 10px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}><div><span style={{fontFamily:"'Oswald',sans-serif",fontSize:13,letterSpacing:'.04em',textTransform:'uppercase',color:COLORS.textMuted}}>Procurement Recommendations</span><div style={{fontSize:11,color:COLORS.textMuted,marginTop:4}}>{results.length?`${results.length} rows generated from uploaded data`:'Results will appear here after simulation'}</div></div><button disabled={!results.length} onClick={downloadReport} style={{display:'flex',alignItems:'center',gap:7,background:COLORS.panelRaised,color:COLORS.textPrimary,border:`1px solid ${COLORS.line}`,borderRadius:6,padding:'8px 11px',cursor:results.length?'pointer':'not-allowed',opacity:results.length?1:.45,fontSize:11.5}}><Download size={14}/> Export CSV</button></div>
-          {results.length?<div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:13,minWidth:1050}}><thead><tr style={{borderTop:`1px solid ${COLORS.line}`,borderBottom:`1px solid ${COLORS.line}`}}>{['SKU','Description','Location','Supplier','On Hand','Demand','Lead Time','Status','Recommended Qty','Purchase Value'].map(h=><th key={h} style={{textAlign:['On Hand','Demand','Lead Time','Recommended Qty','Purchase Value'].includes(h)?'right':'left',padding:'9px 18px',fontFamily:"'Oswald',sans-serif",fontWeight:500,fontSize:11,letterSpacing:'.06em',textTransform:'uppercase',color:COLORS.textMuted}}>{h}</th>)}</tr></thead><tbody>{results.map(r=><React.Fragment key={r.id}><tr onClick={()=>setSelected(selected?.id===r.id?null:r)} style={{borderBottom:`1px solid ${COLORS.line}`,cursor:'pointer',background:selected?.id===r.id?COLORS.panelRaised:'transparent'}}><td style={{padding:'10px 18px',fontFamily:"'IBM Plex Mono',monospace"}}>{r.sku}</td><td style={{padding:'10px 18px'}}>{r.desc}</td><td style={{padding:'10px 18px',color:COLORS.textMuted}}>{r.location}</td><td style={{padding:'10px 18px',color:COLORS.textMuted}}>{r.supplier}</td><td style={{padding:'10px 18px',textAlign:'right',fontFamily:"'IBM Plex Mono',monospace",color:COLORS.textMuted}}>{r.onHand.toLocaleString()}</td><td style={{padding:'10px 18px',textAlign:'right',fontFamily:"'IBM Plex Mono',monospace",color:COLORS.textMuted}}>{r.demand.toLocaleString()}</td><td style={{padding:'10px 18px',textAlign:'right',fontFamily:"'IBM Plex Mono',monospace",color:COLORS.textMuted}}>{r.leadTime?r.leadTime+'d':'—'}</td><td style={{padding:'10px 18px'}}><Stamp status={r.status}/></td><td style={{padding:'10px 18px',textAlign:'right',fontFamily:"'IBM Plex Mono',monospace",fontWeight:600,color:r.qty>0?COLORS.textPrimary:COLORS.textMuted}}>{r.qty?r.qty.toLocaleString():'—'}</td><td style={{padding:'10px 18px',textAlign:'right',fontFamily:"'IBM Plex Mono',monospace",color:COLORS.textMuted}}>{r.purchaseValue?`R ${r.purchaseValue.toLocaleString('en-ZA',{maximumFractionDigits:0})}`:'—'}</td></tr>{selected?.id===r.id&&<tr><td colSpan="10" style={{padding:'14px 18px',background:COLORS.ink,borderBottom:`1px solid ${COLORS.line}`}}><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:18}}><div><div style={{fontFamily:"'Oswald',sans-serif",fontSize:11,color:COLORS.textMuted,textTransform:'uppercase',letterSpacing:'.06em'}}>Recommendation rationale</div><div style={{fontSize:12.5,lineHeight:1.6,marginTop:6}}>{r.reason}</div></div><div><div style={{fontFamily:"'Oswald',sans-serif",fontSize:11,color:COLORS.textMuted,textTransform:'uppercase',letterSpacing:'.06em'}}>Decision data</div><div style={{fontSize:12,color:COLORS.textMuted,marginTop:6,display:'flex',gap:20,flexWrap:'wrap'}}><span>Safety stock: <b style={{color:COLORS.textPrimary}}>{r.safetyStock.toLocaleString()}</b></span><span>Unit price: <b style={{color:COLORS.textPrimary}}>R {r.unitPrice.toLocaleString('en-ZA')}</b></span><span>Buyer: <b style={{color:COLORS.textPrimary}}>{r.buyer}</b></span></div></div></div></td></tr>}</React.Fragment>)}</tbody></table></div>:<div style={{padding:40,textAlign:'center',color:COLORS.textMuted}}><FileSpreadsheet size={26} style={{marginBottom:10}}/><div style={{fontSize:13}}>{parsed?'Your workbook is loaded. Run the simulation above.':'Upload your sample Excel workbook to populate the demo.'}</div></div>}
+          {results.length?<div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:13,minWidth:1160}}><thead><tr style={{borderTop:`1px solid ${COLORS.line}`,borderBottom:`1px solid ${COLORS.line}`}}>{['SKU','Description','Classification','Location','Supplier','On Hand','Demand','Lead Time','Status','Recommended Qty','Purchase Value'].map(h=><th key={h} style={{textAlign:['On Hand','Demand','Lead Time','Recommended Qty','Purchase Value'].includes(h)?'right':'left',padding:'9px 18px',fontFamily:"'Oswald',sans-serif",fontWeight:500,fontSize:11,letterSpacing:'.06em',textTransform:'uppercase',color:COLORS.textMuted}}>{h}</th>)}</tr></thead><tbody>{results.map(r=><React.Fragment key={r.id}><tr onClick={()=>setSelected(selected?.id===r.id?null:r)} style={{borderBottom:`1px solid ${COLORS.line}`,cursor:'pointer',background:selected?.id===r.id?COLORS.panelRaised:'transparent'}}><td style={{padding:'10px 18px',fontFamily:"'IBM Plex Mono',monospace"}}>{r.sku}</td><td style={{padding:'10px 18px'}}>{r.desc}</td><td style={{padding:'10px 18px'}}>{r.classification || 'UNCLASSIFIED'}</td><td style={{padding:'10px 18px',color:COLORS.textMuted}}>{r.location}</td><td style={{padding:'10px 18px',color:COLORS.textMuted}}>{r.supplier}</td><td style={{padding:'10px 18px',textAlign:'right',fontFamily:"'IBM Plex Mono',monospace",color:COLORS.textMuted}}>{r.onHand.toLocaleString()}</td><td style={{padding:'10px 18px',textAlign:'right',fontFamily:"'IBM Plex Mono',monospace",color:COLORS.textMuted}}>{r.demand.toLocaleString()}</td><td style={{padding:'10px 18px',textAlign:'right',fontFamily:"'IBM Plex Mono',monospace",color:COLORS.textMuted}}>{r.leadTime?r.leadTime+'d':'â€”'}</td><td style={{padding:'10px 18px'}}><Stamp status={r.status}/></td><td style={{padding:'10px 18px',textAlign:'right',fontFamily:"'IBM Plex Mono',monospace",fontWeight:600,color:r.qty>0?COLORS.textPrimary:COLORS.textMuted}}>{r.qty?r.qty.toLocaleString():'â€”'}</td><td style={{padding:'10px 18px',textAlign:'right',fontFamily:"'IBM Plex Mono',monospace",color:COLORS.textMuted}}>{r.purchaseValue?`R ${r.purchaseValue.toLocaleString('en-ZA',{maximumFractionDigits:0})}`:'â€”'}</td></tr>{selected?.id===r.id&&<tr><td colSpan="11" style={{padding:'14px 18px',background:COLORS.ink,borderBottom:`1px solid ${COLORS.line}`}}><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:18}}><div><div style={{fontFamily:"'Oswald',sans-serif",fontSize:11,color:COLORS.textMuted,textTransform:'uppercase',letterSpacing:'.06em'}}>Recommendation rationale</div><div style={{fontSize:12.5,lineHeight:1.6,marginTop:6}}>{r.reason}</div></div><div><div style={{fontFamily:"'Oswald',sans-serif",fontSize:11,color:COLORS.textMuted,textTransform:'uppercase',letterSpacing:'.06em'}}>Decision data</div><div style={{fontSize:12,color:COLORS.textMuted,marginTop:6,display:'flex',gap:20,flexWrap:'wrap'}}><span>Safety stock: <b style={{color:COLORS.textPrimary}}>{r.safetyStock.toLocaleString()}</b></span><span>Unit price: <b style={{color:COLORS.textPrimary}}>R {r.unitPrice.toLocaleString('en-ZA')}</b></span><span>Buyer: <b style={{color:COLORS.textPrimary}}>{r.buyer}</b></span></div></div></div></td></tr>}</React.Fragment>)}</tbody></table></div>:<div style={{padding:40,textAlign:'center',color:COLORS.textMuted}}><FileSpreadsheet size={26} style={{marginBottom:10}}/><div style={{fontSize:13}}>{parsed?'Your workbook is loaded. Run the simulation above.':'Upload your sample Excel workbook to populate the demo.'}</div></div>}
         </div>
         <div style={{marginTop:14,fontSize:11,color:COLORS.textMuted,display:'flex',gap:12,alignItems:'center'}}><Info size={13}/><span>Demo processing happens in your browser. Uploaded files are not sent to a ProcurePulse server in this V0.1 demo.</span></div>
-        <div style={{marginTop:10,fontSize:11,color:COLORS.textMuted}}>ProcurePulse V0.1 · {clock ? clock.toLocaleDateString('en-ZA') : '-'}</div>
+        <div style={{marginTop:10,fontSize:11,color:COLORS.textMuted}}>ProcurePulse V0.1 | {clock ? clock.toLocaleDateString('en-ZA') : '-'}</div>
+        </> : page==='Workings' ? <div style={{maxWidth:1000}}>
+          <h1 style={{fontFamily:"'Oswald',sans-serif",fontSize:22,margin:'0 0 6px'}}>Workings</h1>
+          <p style={{fontSize:13,color:COLORS.textMuted,lineHeight:1.6,margin:'0 0 22px'}}>Current demo behaviour and potential future additions.</p>
+          <section style={{background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:8,padding:18,marginBottom:14}}>
+            <h2 style={{fontFamily:"'Oswald',sans-serif",fontSize:15,margin:'0 0 12px',color:COLORS.teal}}>Current demo behaviour</h2>
+            <ul style={{margin:0,paddingLeft:20,color:COLORS.textPrimary,fontSize:13,lineHeight:1.9}}>
+              <li>Uploaded workbook data is parsed in the browser and converted into item/location records.</li>
+              <li>The selected scenario is passed to the procurement simulation engine.</li>
+              <li>Recommendations display available stock, demand, supplier, lead time, status, quantity and purchase value fields.</li>
+              <li>Rows can be expanded to inspect recommendation rationale and decision data.</li>
+              <li>Recommendation results can be exported as CSV.</li>
+              <li>Classification displays the engine result when available; otherwise it will show UNCLASSIFIED.</li>
+            </ul>
+            <p style={{fontSize:11.5,color:COLORS.textMuted,lineHeight:1.6,margin:'12px 0 0'}}>The engine and selected scenario remain the source of truth for the actual calculations.</p>
+          </section>
+          <section style={{background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:8,padding:18}}>
+            <h2 style={{fontFamily:"'Oswald',sans-serif",fontSize:15,margin:'0 0 12px',color:COLORS.amber}}>Potential future additions â€” not yet implemented</h2>
+            <ul style={{margin:0,paddingLeft:20,color:COLORS.textPrimary,fontSize:13,lineHeight:1.9}}>
+              <li>Formal A/B/C/D/S/N/NPI classification based on SKU movement history.</li>
+              <li>Location-aware replenishment and inter-branch transfer recommendations.</li>
+              <li>Weekly buying recommendations and medium-term forward-order planning.</li>
+              <li>Supplier comparisons using price, lead time, availability and order constraints.</li>
+              <li>Min/max stock and minimum-order-quantity policies.</li>
+              <li>Data-quality validation, audit trails and explainable recommendation reasons.</li>
+              <li>Validated ERP integration and role-based workflows.</li>
+            </ul>
+          </section>
+        </div> : page==='Logic' ? <div style={{maxWidth:1000}}>
+          <h1 style={{fontFamily:"'Oswald',sans-serif",fontSize:22,margin:'0 0 6px'}}>Calculation Logic</h1>
+          <p style={{fontSize:13,color:COLORS.textMuted,lineHeight:1.6,margin:'0 0 22px'}}>These equations document the current V0.1 procurement engine. Results depend on the uploaded data, classification and selected scenario.</p>
+
+          <section style={{background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:8,padding:18,marginBottom:14}}>
+            <h2 style={{fontFamily:"'Oswald',sans-serif",fontSize:15,margin:'0 0 12px'}}>1. Establish the stock position</h2>
+            <div style={{background:COLORS.ink,padding:12,borderRadius:6,marginBottom:10}}><code>Available Stock = max(0, On Hand − Reserved)</code></div>
+            <div style={{background:COLORS.ink,padding:12,borderRadius:6,marginBottom:10}}><code>Projected Stock = Available Stock + Inbound − Demand</code></div>
+            <p style={{fontSize:12,color:COLORS.textMuted,lineHeight:1.6,margin:0}}>Outstanding purchase-order quantities are counted once. In-transit records provide status and ETA information; their quantities are not added again.</p>
+          </section>
+
+          <section style={{background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:8,padding:18,marginBottom:14}}>
+            <h2 style={{fontFamily:"'Oswald',sans-serif",fontSize:15,margin:'0 0 12px'}}>2. Check the replenishment trigger</h2>
+            <div style={{background:COLORS.ink,padding:12,borderRadius:6,marginBottom:10}}><code>{'Replenishment Trigger = Projected Stock < SKU Min'}</code></div>
+            <p style={{fontSize:13,color:COLORS.textMuted,lineHeight:1.7,margin:0}}>Replenishment triggers only when projected stock is strictly below the configured minimum level.</p>
+          </section>
+
+          <section style={{background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:8,padding:18,marginBottom:14}}>
+            <h2 style={{fontFamily:"'Oswald',sans-serif",fontSize:15,margin:'0 0 12px'}}>3. Calculate the required purchase</h2>
+            <div style={{background:COLORS.ink,padding:12,borderRadius:6,marginBottom:10}}><code>Target Stock = SKU Max if Max {'>'} 0; otherwise SKU Min</code></div>
+            <div style={{background:COLORS.ink,padding:12,borderRadius:6,marginBottom:10}}><code>Required Purchase = max(0, Demand + Target Stock − Available Stock − Inbound)</code></div>
+            <p style={{fontSize:13,color:COLORS.textMuted,lineHeight:1.7,margin:0}}>If the trigger is not met, the required purchase is zero. Automatic purchasing is limited to A, B and C classifications.</p>
+          </section>
+
+          <section style={{background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:8,padding:18,marginBottom:14}}>
+            <h2 style={{fontFamily:"'Oswald',sans-serif",fontSize:15,margin:'0 0 12px'}}>4. Apply supplier order constraints</h2>
+            <div style={{background:COLORS.ink,padding:12,borderRadius:6,marginBottom:10}}><code>Base Order = max(Required Purchase, Supplier MOQ)</code></div>
+            <div style={{background:COLORS.ink,padding:12,borderRadius:6,marginBottom:10}}><code>Order Qty = ceil(Base Order / Order Multiple) × Order Multiple</code></div>
+            <div style={{background:COLORS.ink,padding:12,borderRadius:6,marginBottom:10}}><code>Purchase Value = Order Qty × Unit Price</code></div>
+            <p style={{fontSize:13,color:COLORS.textMuted,lineHeight:1.7,margin:0}}>The order multiple is treated as at least 1. The recommended quantity is zero if there is no selected active supplier or the classification is not eligible for automatic replenishment.</p>
+          </section>
+
+          <section style={{background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:8,padding:18,marginBottom:14}}>
+            <h2 style={{fontFamily:"'Oswald',sans-serif",fontSize:15,margin:'0 0 12px'}}>Worked example</h2>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}}>
+              {[
+                ['Available Stock','20 units'],
+                ['Demand','30 units'],
+                ['Inbound','5 units'],
+                ['SKU Min','10 units'],
+                ['SKU Max','40 units'],
+                ['Supplier MOQ','12 units'],
+                ['Order Multiple','6 units'],
+                ['Unit Price','R 100'],
+              ].map(([label,value])=><div key={label} style={{background:COLORS.ink,padding:10,borderRadius:6}}><div style={{fontSize:11,color:COLORS.textMuted,marginBottom:4}}>{label}</div><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13}}>{value}</div></div>)}
+            </div>
+            <div style={{fontSize:13,lineHeight:1.9}}>
+              <div><b>Projected Stock:</b> 20 + 5 − 30 = −5 units</div>
+              <div><b>Trigger:</b> −5 is below Min of 10, so replenishment is triggered.</div>
+              <div><b>Required Purchase:</b> max(0, 30 + 40 − 20 − 5) = 45 units</div>
+              <div><b>Rounded Order:</b> ceil(max(45, 12) / 6) × 6 = 48 units</div>
+              <div><b>Purchase Value:</b> 48 × R 100 = R 4,800</div>
+            </div>
+            <p style={{fontSize:12,color:COLORS.textMuted,lineHeight:1.6,margin:'12px 0 0'}}>This example assumes an A, B or C classification and an active selected supplier. It is illustrative; actual results use the uploaded workbook and selected scenario.</p>
+          </section>
+
+          <section style={{background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:8,padding:18}}>
+            <h2 style={{fontFamily:"'Oswald',sans-serif",fontSize:15,margin:'0 0 12px'}}>Classification and supplier selection</h2>
+            <ul style={{margin:0,paddingLeft:20,color:COLORS.textPrimary,fontSize:13,lineHeight:1.9}}>
+              <li>A, B and C: eligible for automatic replenishment when triggered.</li>
+              <li>D, N and NPI: manual review; S: site intervention.</li>
+              <li>Missing, invalid or duplicated classification records require manual review.</li>
+              <li>Active suppliers are scored using normalized price and lead time, scenario weights, a penalty when lead time exceeds the planning requirement, and a preferred-supplier bonus.</li>
+              <li>Budget Priority weights cost/time at 70%/30%; Time Priority at 25%/75%; Balanced at 50%/50%.</li>
+            </ul>
+          </section>
+        </div> : page==='About' ? <div style={{maxWidth:1000}}>
+          <h1 style={{fontFamily:"'Oswald',sans-serif",fontSize:22,margin:'0 0 6px'}}>About ProcurePulse</h1>
+          <p style={{fontSize:13,color:COLORS.textMuted,lineHeight:1.6,margin:'0 0 22px'}}>Project reference documents and their intended purpose.</p>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:14}}>
+            {[
+              {title:'Software Requirements Specification',file:'ProcurePulse Software Requirements Specification.docx',desc:'Defines requirements, intended capabilities and constraints.'},
+              {title:'Database Design (DDBD) V1.0',file:'ProcurePulse_DDBD_V1.0.docx',desc:'Describes the database design and data structures.'},
+              {title:'Entity Relationship Diagram V0.1',file:'ProcurePulse_ERD_V0.1.docx',desc:'Documents relationships between principal data entities.'},
+              {title:'Platform Constitution V1',file:'ProcurePulse_Platform_Constitution_v1.docx',desc:'Sets out platform principles, boundaries and design rules.'},
+              {title:'System Architecture Document V1',file:'ProcurePulse_System_Architecture_Document_v1.docx',desc:'Describes the planned system components and interactions.'}
+            ].map(doc=><div key={doc.file} style={{background:COLORS.panel,border:`1px solid ${COLORS.line}`,borderRadius:8,padding:18}}>
+              <div style={{fontFamily:"'Oswald',sans-serif",fontSize:14,marginBottom:8}}>{doc.title}</div>
+              <p style={{fontSize:12.5,color:COLORS.textMuted,lineHeight:1.6,margin:'0 0 12px'}}>{doc.desc}</p>
+              <div style={{fontSize:11,color:COLORS.teal,overflowWrap:'anywhere'}}>{doc.file}</div>
+            </div>)}
+          </div>
+          <p style={{fontSize:11.5,color:COLORS.textMuted,marginTop:18,lineHeight:1.6}}>These are project reference filenames; this page does not open the documents themselves.</p>
+        </div> : <div style={{maxWidth:1000}}>
+          <h1 style={{fontFamily:"'Oswald',sans-serif",fontSize:22,margin:'0 0 6px'}}>Dashboard</h1>
+          <p style={{fontSize:13,color:COLORS.textMuted}}>Select Dashboard to return to the procurement overview.</p>
+        </div>}
       </div>
     </div>
   </div>;
